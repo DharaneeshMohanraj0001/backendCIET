@@ -15,10 +15,24 @@ const app = express();
    ✅ Middlewares
 ========================================= */
 
-// ✅ CORS (allow frontend like Live Server: 5500, Vite: 5173 etc.)
+// ✅ CORS — locked to production frontend + local dev
+const ALLOWED_ORIGINS = [
+  "https://ciet-placementtraining.vercel.app",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "http://localhost:3000",
+];
+
 app.use(
   cors({
-    origin: "*", // ✅ allow all (for development)
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman, curl)
+      if (!origin) return callback(null, true);
+      if (ALLOWED_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS: Origin not allowed — " + origin), false);
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -71,3 +85,4 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
+
